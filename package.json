@@ -10,10 +10,6 @@
     "test": "jest"
   },
   "dependencies": {
-    "@chakra-ui/next-js": "^2.4.2",
-    "@chakra-ui/react": "^3.14.2",
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
     "@fontsource/noto-sans": "^5.2.6",
     "@fontsource/noto-sans-jp": "^5.2.5",
     "@mui/material": "^6.4.3",
