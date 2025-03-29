@@ -11,6 +11,12 @@
 import { FREQ_RANGE, CORRELATION_THRESHOLD, MIN_SIGNAL_STRENGTH, FFT_SIZE, MOVING_AVERAGE_BUFFER_SIZE } from './constants';
 import { GainControl } from './gainControl';
 
+// 周波数範囲の型定義
+interface FrequencyRange {
+  min: number;
+  max: number;
+}
+
 /**
  * 音声のピッチを検出するクラス
  * 
@@ -57,10 +63,10 @@ export class PitchDetector {
     return result;
   }
 
-  private findPeakIndex(correlation: Float32Array, sampleRate: number): number | null {
-    const minLag = Math.floor(sampleRate / FREQ_RANGE.max);
-    const maxLag = Math.ceil(sampleRate / FREQ_RANGE.min);
-    
+  private findPeakIndex(correlation: Float32Array, sampleRate: number, freqRange: FrequencyRange): number | null {
+    const minLag = Math.floor(sampleRate / freqRange.max);
+    const maxLag = Math.ceil(sampleRate / freqRange.min);
+
     let maxCorrelation = -Infinity;
     let peakIndex = -1;
 
@@ -91,9 +97,10 @@ export class PitchDetector {
 
   /**
    * 現在の音声からピッチを検出
+   * @param freqRange - 検出する周波数の範囲（指定しない場合はデフォルト値を使用）
    * @returns 検出されたピッチ値（Hz）または検出できない場合はnull
    */
-  detectPitch(): number | null {
+  detectPitch(freqRange: FrequencyRange = FREQ_RANGE): number | null {
     // 時系列データの取得
     this.analyser.getFloatTimeDomainData(this.timeDomainBuffer);
 
@@ -116,7 +123,7 @@ export class PitchDetector {
     const sampleRate = this.audioContext.sampleRate;
 
     // ピークの検出と補間
-    const peakIndex = this.findPeakIndex(correlation, sampleRate);
+    const peakIndex = this.findPeakIndex(correlation, sampleRate, freqRange);
     if (peakIndex === null) {
       return null;
     }
@@ -124,7 +131,7 @@ export class PitchDetector {
     const interpolatedIndex = this.interpolatePeak(correlation, peakIndex);
     const fundamentalFreq = sampleRate / interpolatedIndex;
 
-    if (fundamentalFreq >= FREQ_RANGE.min && fundamentalFreq <= FREQ_RANGE.max) {
+    if (fundamentalFreq >= freqRange.min && fundamentalFreq <= freqRange.max) {
       this.movingAverageBuffer.push(fundamentalFreq);
       if (this.movingAverageBuffer.length > MOVING_AVERAGE_BUFFER_SIZE) {
         this.movingAverageBuffer.shift();

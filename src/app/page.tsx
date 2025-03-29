@@ -3,9 +3,13 @@
 import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
 import { PitchDetector } from "../lib/pitchDetection";
-import { findClosestEqualTemperamentNote, getNoteNameWithOctave } from "../lib/noteConversion";
+import {
+  findClosestEqualTemperamentNote,
+  getNoteNameWithOctave,
+} from "../lib/noteConversion";
 import { TunerDisplay } from "../components/TunerDisplay";
-import { TUNING_THRESHOLD } from "../lib/constants";
+import { SettingsModal } from "../components/SettingsModal";
+import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES } from "../lib/constants";
 
 export default function Tuner() {
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -13,6 +17,8 @@ export default function Tuner() {
   const [cents, setCents] = useState<number>(0);
   const [isInTune, setIsInTune] = useState<boolean>(false);
   const [noteWithOctave, setNoteWithOctave] = useState<string>("");
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [isLowMode, setIsLowMode] = useState<boolean>(false);
 
   const analyzeNote = useCallback((frequency: number) => {
     const { noteNumber, cents } = findClosestEqualTemperamentNote(frequency);
@@ -27,7 +33,12 @@ export default function Tuner() {
     const detectPitch = () => {
       if (!pitchDetector) return;
 
-      const freq = pitchDetector.detectPitch();
+      // 選択されたモードの周波数範囲を使用
+      const freqRange = isLowMode
+        ? INSTRUMENT_FREQ_RANGES.bass
+        : INSTRUMENT_FREQ_RANGES.guitar;
+      const freq = pitchDetector.detectPitch(freqRange);
+
       if (freq) {
         const { noteName, cents: newCents } = analyzeNote(freq);
 
@@ -43,7 +54,9 @@ export default function Tuner() {
 
     const startAudio = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         pitchDetector = new PitchDetector();
         await pitchDetector.initialize(stream);
         detectPitch();
@@ -62,16 +75,26 @@ export default function Tuner() {
         pitchDetector.cleanup();
       }
     };
-  }, [analyzeNote]);
+  }, [analyzeNote, isLowMode]);
 
   return (
     <main className={styles.main}>
+      <div className={styles.settingsButton}>
+        <button onClick={() => setIsSettingsOpen(true)}>⚙️</button>
+      </div>
       <TunerDisplay
         note={note}
         noteWithOctave={noteWithOctave}
         frequency={frequency}
         cents={cents}
         isInTune={isInTune}
+        isLowMode={isLowMode}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        isLowMode={isLowMode}
+        onModeChange={setIsLowMode}
       />
     </main>
   );
