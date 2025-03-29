@@ -21,6 +21,6 @@ export const FREQ_RANGE = {
 export const CORRELATION_THRESHOLD = 0.8;
 export const MIN_SIGNAL_STRENGTH = 0.01;
 export const FFT_SIZE = 2048;
-export const MOVING_AVERAGE_BUFFER_SIZE = 4;
+export const MOVING_AVERAGE_BUFFER_SIZE = 5;
 
-export const TUNING_THRESHOLD = 5; 
+export const TUNING_THRESHOLD = 15; 

@@ -1,5 +1,12 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Ubuntu } from "next/font/google";
+
+const ubuntu = Ubuntu({
+  weight: "700",
+  style: "italic",
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "Guitar & Bass Tuner",
@@ -13,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={ubuntu.className}>{children}</body>
     </html>
   );
 }
