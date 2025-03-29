@@ -38,6 +38,64 @@ export const MOVING_AVERAGE_BUFFER_SIZE = 5;
 
 export const TUNING_THRESHOLD = 15;
 
-// 8192でギターは全部いける。このくらいのレスポンスは最高。ぎり７限もいけるかな？Bの６２.２までカバー。ただしベースで試しているのでべーすの高フレットの倍音だときついかも
-// 16384は〜５０hzまで.反応良くはない。
-// 32768は５の８フレットの４８HZまで、反応クソ遅い
+export const LOCALES = ['en', 'ja'] as const;
+export type Locale = typeof LOCALES[number];
+
+export const DEFAULT_LOCALE: Locale = 'en';
+
+export const translations = {
+  en: {
+    title: 'minimal-tuner | Professional Chromatic Tuner',
+    description: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with professional-grade accuracy.',
+    keywords: 'chromatic tuner, guitar tuner, bass tuner, violin tuner, ukulele tuner, online tuner, free tuner, professional tuner, musical instrument tuner, pitch tuner',
+    ogTitle: 'minimal-tuner | Professional Chromatic Tuner',
+    ogDescription: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with professional-grade accuracy.',
+    ogLocale: 'en_US',
+    settings: {
+      openSettings: 'Open Settings',
+      closeSettings: 'Close Settings',
+      mode: {
+        label: 'Mode',
+        guitar: 'high',
+        bass: 'low',
+      },
+    },
+    tuner: {
+      hertz: 'Hz',
+      cents: 'cents',
+      flat: 'flat',
+      sharp: 'sharp',
+      inTune: 'In Tune',
+      outOfTune: 'Out of Tune',
+      mainContent: 'Tuner Display',
+    },
+  },
+  ja: {
+    title: 'minimal-tuner | プロフェッショナル クロマチックチューナー',
+    description: 'すべての楽器に対応した高精度なクロマチックチューナー。ギター、ベース、バイオリン、ウクレレなど、様々な楽器のチューニングに最適。無料で使えるオンラインチューナー。',
+    keywords: 'クロマチックチューナー, ギターチューナー, ベースチューナー, バイオリンチューナー, ウクレレチューナー, オンラインチューナー, 無料チューナー, プロフェッショナルチューナー, 楽器チューナー, 音程チューナー',
+    ogTitle: 'minimal-tuner | プロフェッショナル クロマチックチューナー',
+    ogDescription: 'すべての楽器に対応した高精度なクロマチックチューナー。ギター、ベース、バイオリン、ウクレレなど、様々な楽器のチューニングに最適。無料で使えるオンラインチューナー。',
+    ogLocale: 'ja_JP',
+    settings: {
+      openSettings: '設定を開く',
+      closeSettings: '設定を閉じる',
+      mode: {
+        label: 'モード',
+        guitar: '高音',
+        bass: '低音',
+      },
+    },
+    tuner: {
+      hertz: 'ヘルツ',
+      cents: 'セント',
+      flat: 'フラット',
+      sharp: 'シャープ',
+      inTune: 'チューニング完了',
+      outOfTune: 'チューニングが必要',
+      mainContent: 'チューナー表示',
+    },
+  },
+} as const;
+
+export type Translation = typeof translations[Locale];
