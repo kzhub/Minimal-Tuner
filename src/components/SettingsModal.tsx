@@ -1,11 +1,13 @@
 import { useEffect } from "react";
 import styles from "../app/page.module.css";
+import { type Translation } from "../lib/constants";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   isLowMode: boolean;
   onModeChange: (isLow: boolean) => void;
+  translations: Translation['settings'];
 }
 
 export function SettingsModal({
@@ -13,6 +15,7 @@ export function SettingsModal({
   onClose,
   isLowMode,
   onModeChange,
+  translations,
 }: SettingsModalProps) {
   // ESCキーでモーダルを閉じる
   useEffect(() => {
@@ -51,18 +54,18 @@ export function SettingsModal({
         id="settings-modal"
       >
         <div className={styles.modalHeader}>
-          <h2 id="settings-modal-title">settings</h2>
+          <h2 id="settings-modal-title">{translations.openSettings}</h2>
           <button
             className={styles.closeButton}
             onClick={onClose}
-            aria-label="Close settings"
+            aria-label={translations.closeSettings}
           >
             ×
           </button>
         </div>
         <div className={styles.modalBody}>
           <div className={styles.settingItem}>
-            <label htmlFor="mode-toggle">mode</label>
+            <label htmlFor="mode-toggle">{translations.mode.label}</label>
             <div className={styles.switchContainer}>
               <label className={styles.switch}>
                 <input
@@ -70,13 +73,13 @@ export function SettingsModal({
                   type="checkbox"
                   checked={isLowMode}
                   onChange={handleModeChange}
-                  aria-label="Toggle mode"
+                  aria-label={`${translations.mode.label} ${translations.mode.guitar}/${translations.mode.bass}`}
                 />
                 <span className={styles.slider}></span>
               </label>
               <div className={styles.switchLabel}>
-                <span>high</span>
-                <span>low</span>
+                <span>{translations.mode.guitar}</span>
+                <span>{translations.mode.bass}</span>
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import styles from "../app/page.module.css";
+import { type Translation } from "../lib/constants";
 
 interface TunerDisplayProps {
   note: string;
@@ -6,6 +7,7 @@ interface TunerDisplayProps {
   frequency: number | null;
   cents: number;
   isInTune: boolean;
+  translations: Translation['tuner'];
 }
 
 export function TunerDisplay({
@@ -14,6 +16,7 @@ export function TunerDisplay({
   frequency,
   cents,
   isInTune,
+  translations,
 }: TunerDisplayProps) {
   return (
     <div className={styles.tunerContainer}>
@@ -28,10 +31,10 @@ export function TunerDisplay({
         />
       </div>
       <div className={styles.tunerFreq}>
-        {frequency ? `${frequency.toFixed(1)} Hz` : "- Hz"}
+        {frequency ? `${frequency.toFixed(1)} ${translations.hertz}` : `- ${translations.hertz}`}
       </div>
       <div className={styles.tunerCents}>
-        {cents ? `${cents > 0 ? "+" : ""}${cents}` : "0"} cents
+        {cents ? `${cents > 0 ? "+" : ""}${cents}` : "0"} {translations.cents}
       </div>
       <div
         className={styles.needle}

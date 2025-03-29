@@ -41,3 +41,63 @@ export const TUNING_THRESHOLD = 15;
 // 8192でギターは全部いける。このくらいのレスポンスは最高。ぎり７限もいけるかな？Bの６２.２までカバー。ただしベースで試しているのでべーすの高フレットの倍音だときついかも
 // 16384は〜５０hzまで.反応良くはない。
 // 32768は５の８フレットの４８HZまで、反応クソ遅い
+
+export const LOCALES = ['en', 'ja'] as const;
+export type Locale = typeof LOCALES[number];
+
+export const DEFAULT_LOCALE: Locale = 'en';
+
+export const translations = {
+  en: {
+    title: 'minimal-tuner | Professional Guitar and Bass Tuner',
+    description: 'Professional tuner for guitar and bass.',
+    keywords: 'guitar tuner, bass tuner, tuning',
+    ogTitle: 'minimal-tuner | Professional Guitar and Bass Tuner',
+    ogDescription: 'Professional tuner for guitar and bass.',
+    ogLocale: 'en_US',
+    settings: {
+      openSettings: 'Open Settings',
+      closeSettings: 'Close Settings',
+      mode: {
+        label: 'Mode',
+        guitar: 'Guitar',
+        bass: 'Bass',
+      },
+    },
+    tuner: {
+      hertz: 'Hz',
+      cents: 'cents',
+      flat: 'flat',
+      sharp: 'sharp',
+      inTune: 'In Tune',
+      outOfTune: 'Out of Tune',
+    },
+  },
+  ja: {
+    title: 'minimal-tuner | プロフェッショナルギター・ベースチューナー',
+    description: 'ギターとベースのためのプロフェッショナルチューナー。',
+    keywords: 'ギターチューナー, ベースチューナー, チューニング',
+    ogTitle: 'minimal-tuner | プロフェッショナルギター・ベースチューナー',
+    ogDescription: 'ギターとベースのためのプロフェッショナルチューナー。',
+    ogLocale: 'ja_JP',
+    settings: {
+      openSettings: '設定を開く',
+      closeSettings: '設定を閉じる',
+      mode: {
+        label: 'モード',
+        guitar: 'ギター',
+        bass: 'ベース',
+      },
+    },
+    tuner: {
+      hertz: 'ヘルツ',
+      cents: 'セント',
+      flat: 'フラット',
+      sharp: 'シャープ',
+      inTune: 'チューニング完了',
+      outOfTune: 'チューニングが必要',
+    },
+  },
+} as const;
+
+export type Translation = typeof translations[Locale];

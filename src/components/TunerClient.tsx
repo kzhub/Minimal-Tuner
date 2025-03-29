@@ -9,10 +9,15 @@ import {
 } from "../lib/noteConversion";
 import { TunerDisplay } from "./TunerDisplay";
 import { SettingsModal } from "./SettingsModal";
-import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES } from "../lib/constants";
+import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES, translations, type Locale } from "../lib/constants";
 import { IoSettingsOutline } from "react-icons/io5";
+import { useParams } from "next/navigation";
 
 export default function TunerClient() {
+  const params = useParams();
+  const locale = (params.locale as Locale) || 'en';
+  const t = translations[locale];
+
   const [frequency, setFrequency] = useState<number | null>(null);
   const [note, setNote] = useState<string>("");
   const [cents, setCents] = useState<number>(0);
@@ -76,7 +81,7 @@ export default function TunerClient() {
       <div className={styles.settingsButton}>
         <button
           onClick={() => setIsSettingsOpen(true)}
-          aria-label="設定を開く"
+          aria-label={t.settings.openSettings}
           aria-expanded={isSettingsOpen}
           aria-controls="settings-modal"
           className={styles.settingsButton}
@@ -90,12 +95,14 @@ export default function TunerClient() {
         frequency={frequency}
         cents={cents}
         isInTune={isInTune}
+        translations={t.tuner}
       />
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         isLowMode={isLowMode}
         onModeChange={setIsLowMode}
+        translations={t.settings}
       />
     </main>
   );
