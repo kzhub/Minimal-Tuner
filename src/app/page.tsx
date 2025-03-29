@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import styles from "./page.module.css";
-import { PitchDetector } from "../lib/pitchDetection";
+import { PitchDetectorWasm } from "../lib/pitchDetectionWasm";
 import { findClosestEqualTemperamentNote, getNoteNameWithOctave } from "../lib/noteConversion";
 import { TunerDisplay } from "../components/TunerDisplay";
 import { TUNING_THRESHOLD } from "../lib/constants";
@@ -21,7 +21,7 @@ export default function Tuner() {
   }, []);
 
   useEffect(() => {
-    let pitchDetector: PitchDetector | null = null;
+    let pitchDetector: PitchDetectorWasm | null = null;
     let animationFrame: number;
 
     const detectPitch = () => {
@@ -44,7 +44,7 @@ export default function Tuner() {
     const startAudio = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        pitchDetector = new PitchDetector();
+        pitchDetector = new PitchDetectorWasm();
         await pitchDetector.initialize(stream);
         detectPitch();
       } catch (error) {
