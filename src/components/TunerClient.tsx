@@ -11,10 +11,11 @@ import { TunerDisplay } from "./TunerDisplay";
 import { SettingsModal } from "./SettingsModal";
 import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES, translations, type Locale } from "../lib/constants";
 import { IoSettingsOutline } from "react-icons/io5";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export default function TunerClient() {
   const params = useParams();
+  const router = useRouter();
   const locale = (params.locale as Locale) || 'en';
   const t = translations[locale];
 
@@ -25,6 +26,11 @@ export default function TunerClient() {
   const [noteWithOctave, setNoteWithOctave] = useState<string>("");
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
   const [isLowMode, setIsLowMode] = useState<boolean>(false);
+
+  const toggleLocale = () => {
+    const newLocale = locale === 'en' ? 'ja' : 'en';
+    router.push(`/${newLocale}`);
+  };
 
   const analyzeNote = useCallback((frequency: number) => {
     const { noteNumber, cents } = findClosestEqualTemperamentNote(frequency);
@@ -78,7 +84,14 @@ export default function TunerClient() {
 
   return (
     <main className={styles.main}>
-      <div className={styles.settingsButton}>
+      <div className={styles.headerButtons}>
+        <button
+          onClick={toggleLocale}
+          aria-label={locale === 'en' ? '日本語に切り替え' : 'Switch to English'}
+          className={styles.langButton}
+        >
+          {locale === 'en' ? 'JA' : 'EN'}
+        </button>
         <button
           onClick={() => setIsSettingsOpen(true)}
           aria-label={t.settings.openSettings}
