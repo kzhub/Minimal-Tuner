@@ -14,7 +14,7 @@ const t = translations[DEFAULT_LOCALE];
 export const metadata: Metadata = {
   title: {
     default: t.title,
-    template: "%s | minimal-tuner"
+    template: "%s"
   },
   description: t.description,
   keywords: t.keywords,

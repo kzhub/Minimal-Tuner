@@ -11,12 +11,12 @@ import { TunerDisplay } from "./TunerDisplay";
 import { SettingsModal } from "./SettingsModal";
 import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES, translations, type Locale } from "../lib/constants";
 import { IoSettingsOutline } from "react-icons/io5";
-import { useParams, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function TunerClient() {
-  const params = useParams();
+  const pathname = usePathname();
   const router = useRouter();
-  const locale = (params.locale as Locale) || 'en';
+  const locale = (pathname?.split('/')[1] as Locale) || 'en';
   const t = translations[locale];
 
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -83,12 +83,18 @@ export default function TunerClient() {
   }, [analyzeNote, isLowMode]);
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} role="main" aria-label={t.tuner.mainContent}>
       <div className={styles.headerButtons}>
         <button
           onClick={toggleLocale}
           aria-label={locale === 'en' ? '日本語に切り替え' : 'Switch to English'}
           className={styles.langButton}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              toggleLocale();
+            }
+          }}
         >
           {locale === 'en' ? 'JA' : 'EN'}
         </button>
@@ -98,6 +104,12 @@ export default function TunerClient() {
           aria-expanded={isSettingsOpen}
           aria-controls="settings-modal"
           className={styles.settingsButton}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setIsSettingsOpen(true);
+            }
+          }}
         >
           <IoSettingsOutline size={24} color="#666" aria-hidden="true" />
         </button>

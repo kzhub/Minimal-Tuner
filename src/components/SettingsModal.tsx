@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import styles from "../app/page.module.css";
 import { type Translation } from "../lib/constants";
 
@@ -17,6 +17,9 @@ export function SettingsModal({
   onModeChange,
   translations,
 }: SettingsModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   // ESCキーでモーダルを閉じる
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -24,10 +27,30 @@ export function SettingsModal({
     };
 
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       document.addEventListener("keydown", handleEsc);
       return () => document.removeEventListener("keydown", handleEsc);
     }
   }, [isOpen, onClose]);
+
+  // モーダルが開いた時にフォーカスを設定
+  useEffect(() => {
+    if (isOpen && modalRef.current) {
+      const focusableElements = modalRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        (focusableElements[0] as HTMLElement).focus();
+      }
+    }
+  }, [isOpen]);
+
+  // モーダルが閉じた時にフォーカスを復元
+  useEffect(() => {
+    if (!isOpen && previousFocusRef.current) {
+      previousFocusRef.current.focus();
+    }
+  }, [isOpen]);
 
   // モード変更時にモーダルを閉じる
   const handleModeChange = () => {
@@ -35,7 +58,7 @@ export function SettingsModal({
     // スイッチのアニメーションを確認できるように遅延して閉じる
     setTimeout(() => {
       onClose();
-    }, 850); // 500ミリ秒の遅延
+    }, 850);
   };
 
   if (!isOpen) return null;
@@ -49,9 +72,11 @@ export function SettingsModal({
       aria-labelledby="settings-modal-title"
     >
       <div
+        ref={modalRef}
         className={styles.modalContent}
         onClick={(e) => e.stopPropagation()}
         id="settings-modal"
+        tabIndex={-1}
       >
         <div className={styles.modalHeader}>
           <h2 id="settings-modal-title">{translations.openSettings}</h2>
@@ -75,7 +100,7 @@ export function SettingsModal({
                   onChange={handleModeChange}
                   aria-label={`${translations.mode.label} ${translations.mode.guitar}/${translations.mode.bass}`}
                 />
-                <span className={styles.slider}></span>
+                <span className={styles.slider} aria-hidden="true"></span>
               </label>
               <div className={styles.switchLabel}>
                 <span>{translations.mode.guitar}</span>

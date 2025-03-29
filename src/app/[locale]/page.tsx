@@ -14,7 +14,8 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const t = translations[params.locale];
+  const resolvedParams = await Promise.resolve(params);
+  const t = translations[resolvedParams.locale];
   const baseUrl = "https://your-domain.com";
 
   return {
@@ -29,10 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: t.ogDescription,
       type: "website",
       locale: t.ogLocale,
-      alternateLocale: params.locale === 'en' ? 'ja_JP' : 'en_US',
+      alternateLocale: resolvedParams.locale === 'en' ? 'ja_JP' : 'en_US',
     },
     alternates: {
-      canonical: `${baseUrl}/${params.locale}`,
+      canonical: `${baseUrl}/${resolvedParams.locale}`,
       languages: {
         "en-US": `${baseUrl}/en`,
         "ja-JP": `${baseUrl}/ja`,
