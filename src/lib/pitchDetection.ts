@@ -9,6 +9,7 @@
  */
 
 import { FREQ_RANGE, CORRELATION_THRESHOLD, MIN_SIGNAL_STRENGTH, FFT_SIZE, MOVING_AVERAGE_BUFFER_SIZE } from './constants';
+import { GainControl } from './gainControl';
 
 /**
  * 音声のピッチを検出するクラス
@@ -24,12 +25,14 @@ export class PitchDetector {
   private source: MediaStreamAudioSourceNode | null = null;
   private movingAverageBuffer: number[] = [];
   private timeDomainBuffer: Float32Array;
+  private gainControl: GainControl;
 
   constructor() {
     this.audioContext = new AudioContext();
     this.analyser = this.audioContext.createAnalyser();
     this.analyser.fftSize = FFT_SIZE;
     this.timeDomainBuffer = new Float32Array(this.analyser.frequencyBinCount);
+    this.gainControl = new GainControl(this.audioContext);
   }
 
   /**
@@ -38,7 +41,8 @@ export class PitchDetector {
    */
   async initialize(stream: MediaStream) {
     this.source = this.audioContext.createMediaStreamSource(stream);
-    this.source.connect(this.analyser);
+    this.source.connect(this.gainControl.getNode());
+    this.gainControl.getNode().connect(this.analyser);
   }
 
   private calculateAutocorrelation(data: Float32Array): Float32Array {
@@ -93,12 +97,15 @@ export class PitchDetector {
     // 時系列データの取得
     this.analyser.getFloatTimeDomainData(this.timeDomainBuffer);
 
-    // 信号強度のチェック
+    // 信号強度のチェックとゲイン調整
     let signalStrength = 0;
     for (const value of this.timeDomainBuffer) {
       signalStrength += value * value;
     }
     signalStrength = Math.sqrt(signalStrength / this.timeDomainBuffer.length);
+
+    // ゲインの更新
+    this.gainControl.updateGain(signalStrength);
 
     if (signalStrength < MIN_SIGNAL_STRENGTH) {
       return null;
@@ -137,6 +144,9 @@ export class PitchDetector {
   cleanup() {
     if (this.source) {
       this.source.disconnect();
+    }
+    if (this.gainControl) {
+      this.gainControl.getNode().disconnect();
     }
     if (this.audioContext) {
       this.audioContext.close();

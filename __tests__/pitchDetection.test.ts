@@ -4,48 +4,108 @@
 
 import { PitchDetector } from '../src/lib/pitchDetection';
 import { FREQ_RANGE } from '../src/lib/constants';
+import { GainControl } from '../src/lib/gainControl';
 
-// AudioContextとAnalyserNodeのモック
-const mockAnalyser = {
-  fftSize: 0,
-  frequencyBinCount: 2048,
-  getFloatTimeDomainData: jest.fn(),
-  connect: jest.fn(),
-  disconnect: jest.fn(),
-};
+// GainControlのモック
+jest.mock('../src/lib/gainControl', () => {
+  return {
+    GainControl: jest.fn().mockImplementation(() => ({
+      getNode: jest.fn().mockReturnValue({
+        connect: jest.fn(),
+        disconnect: jest.fn(),
+        gain: {
+          setTargetAtTime: jest.fn()
+        }
+      }),
+      updateGain: jest.fn()
+    }))
+  };
+});
 
-const mockAudioContext = {
-  createAnalyser: jest.fn(() => mockAnalyser),
-  createMediaStreamSource: jest.fn(() => ({
-    connect: jest.fn(),
-    disconnect: jest.fn(),
-  })),
-  close: jest.fn(),
-};
-
-// グローバルにAudioContextを定義
-global.AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
-
-describe('PitchDetector', () => {
+describe('ピッチ検出機能', () => {
   let pitchDetector: PitchDetector;
+  let mockStream: MediaStream;
+  let mockAudioContext: AudioContext;
+  let mockAnalyser: AnalyserNode;
+  let mockSource: MediaStreamAudioSourceNode;
+  let mockGainNode: GainNode;
+  let mockGainControl: GainControl;
 
   beforeEach(() => {
-    // モックをリセット
-    jest.clearAllMocks();
+    // モックの設定
+    mockStream = {} as MediaStream;
+    mockAnalyser = {
+      fftSize: 2048,
+      frequencyBinCount: 1024,
+      getFloatTimeDomainData: jest.fn(),
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    } as unknown as AnalyserNode;
+
+    mockSource = {
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+    } as unknown as MediaStreamAudioSourceNode;
+
+    mockGainNode = {
+      connect: jest.fn(),
+      disconnect: jest.fn(),
+      gain: {
+     
+      }
+    } as unknown as GainNode;
+
+    mockGainControl = {
+      getNode: jest.fn().mockReturnValue(mockGainNode),
+      updateGain: jest.fn()
+    } as unknown as GainControl;
+
+    mockAudioContext = {
+      createAnalyser: jest.fn().mockReturnValue(mockAnalyser),
+      createMediaStreamSource: jest.fn().mockReturnValue(mockSource),
+      createGain: jest.fn().mockReturnValue(mockGainNode),
+      sampleRate: 44100,
+      close: jest.fn(),
+    } as unknown as AudioContext;
+
+    // AudioContextのグローバルモック
+    global.AudioContext = jest.fn().mockImplementation(() => mockAudioContext);
+
+    // GainControlのモックを設定
+    (GainControl as jest.Mock).mockImplementation(() => mockGainControl);
+
     pitchDetector = new PitchDetector();
   });
 
   afterEach(() => {
+    jest.clearAllMocks();
     pitchDetector.cleanup();
   });
 
+  describe('初期化処理', () => {
+    it('オーディオノードを正しく初期化する', async () => {
+      await pitchDetector.initialize(mockStream);
+
+      expect(mockSource.connect).toHaveBeenCalledWith(mockGainNode);
+      expect(mockGainNode.connect).toHaveBeenCalledWith(mockAnalyser);
+    });
+  });
+
+  describe('ピッチ検出処理', () => {
+    it('信号強度が弱い場合はnullを返す', () => {
+      const mockTimeDomainData = new Float32Array(1024).fill(0.01);
+      mockAnalyser.getFloatTimeDomainData = jest.fn().mockImplementation((array) => {
+        array.set(mockTimeDomainData);
+      });
+   
+    });
+  });
+
   describe('detectPitch', () => {
-    test('信号強度が弱い場合はnullを返す', () => {
-      // 弱い信号をシミュレート
-      mockAnalyser.getFloatTimeDomainData.mockImplementation((array) => {
-        for (let i = 0; i < array.length; i++) {
-          array[i] = 0.0001; // 非常に小さい値
-        }
+    it('有効なピークが見つからない場合はnullを返す', () => {
+      const mockTimeDomainData = new Float32Array(1024).fill(0.5);
+      mockAnalyser.getFloatTimeDomainData = jest.fn().mockImplementation((array) => {
+        array.set(mockTimeDomainData);
       });
 
       const result = pitchDetector.detectPitch();
@@ -53,7 +113,18 @@ describe('PitchDetector', () => {
     });
   });
 
-  // プライベートメソッドのテスト（実装の詳細に依存するため、必要に応じて追加）
+  describe('cleanup', () => {
+    it('すべてのオーディオノードを適切にクリーンアップする', async () => {
+      await pitchDetector.initialize(mockStream);
+      pitchDetector.cleanup();
+
+      expect(mockSource.disconnect).toHaveBeenCalled();
+      expect(mockGainNode.disconnect).toHaveBeenCalled();
+      expect(mockAudioContext.close).toHaveBeenCalled();
+    });
+  });
+
+  // プライベートメソッドのテスト
   describe('private methods', () => {
     test('calculateAutocorrelation - 正しい自己相関を計算する', () => {
       // @ts-ignore - プライベートメソッドへのアクセス
