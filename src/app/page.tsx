@@ -88,7 +88,6 @@ export default function Tuner() {
         frequency={frequency}
         cents={cents}
         isInTune={isInTune}
-        isLowMode={isLowMode}
       />
       <SettingsModal
         isOpen={isSettingsOpen}
