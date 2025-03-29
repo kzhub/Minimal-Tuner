@@ -1,15 +1,11 @@
 import styles from "../app/page.module.css";
 
-// 楽器モードのタイプ定義
-type InstrumentMode = "guitar" | "bass";
-
 interface TunerDisplayProps {
   note: string;
   noteWithOctave: string;
   frequency: number | null;
   cents: number;
   isInTune: boolean;
-  isLowMode: boolean;
 }
 
 export function TunerDisplay({
@@ -18,7 +14,6 @@ export function TunerDisplay({
   frequency,
   cents,
   isInTune,
-  isLowMode,
 }: TunerDisplayProps) {
   return (
     <div className={styles.tunerContainer}>
