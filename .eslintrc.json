@@ -1,0 +1,8 @@
+{
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "import/no-restricted-paths": "off",
+    "@next/next/no-css-tags": "off",
+    "@typescript-eslint/no-restricted-imports": "off"
+  }
+}
