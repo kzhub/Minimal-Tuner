@@ -22,7 +22,7 @@ export const FREQ_RANGE = {
 // 楽器モード別の周波数範囲
 export const INSTRUMENT_FREQ_RANGES = {
   guitar: {
-    min: 80,   // Hz (ギターの最低音E2は約82.4Hz)
+    min: 60,   // Hz (ギターの最低音E2は約82.4Hz)
     max: 1000  // Hz (ギターの高音域と倍音を考慮)
   },
   bass: {

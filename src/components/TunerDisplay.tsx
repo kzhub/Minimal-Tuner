@@ -22,16 +22,14 @@ export function TunerDisplay({
 }: TunerDisplayProps) {
   return (
     <div className={styles.tunerContainer}>
-      <div className={styles.instrumentMode}>{isLowMode ? "🎻" : "🎸"}</div>
       <div className={`${styles.tunerNote} ${isInTune ? styles.inTune : ""}`}>
         {note || "-"}{" "}
         <span style={{ fontSize: "0.4em", verticalAlign: "super" }}>
           {noteWithOctave ? noteWithOctave.slice(-1) : ""}
         </span>
         <div
-          className={`${styles.tuningIndicator} ${
-            isInTune ? styles.inTune : ""
-          }`}
+          className={`${styles.tuningIndicator} ${isInTune ? styles.inTune : ""
+            }`}
         />
       </div>
       <div className={styles.tunerFreq}>
