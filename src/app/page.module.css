@@ -3,8 +3,8 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #000;
-  color: #fff;
+  background-color: #0c0c0c;
+  color: #fafafa;
   font-family: var(--font-noto-sans);
 }
 
@@ -105,12 +105,12 @@
 .needle {
   width: 4px;
   height: 120px;
-  background: linear-gradient(to bottom, currentColor, #666);
-  color: #fff;
-  border-radius: 2px;
+  background: #fafafa;
   transform-origin: bottom center;
   transition: transform 0.15s ease-out;
   position: relative;
+  mask-image: linear-gradient(to bottom, #3333 0%, #3333 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #3333 0%, #3333 70%, transparent 100%);
 }
 
 .needle::after {
@@ -120,7 +120,7 @@
   left: -8px;
   width: 20px;
   height: 20px;
-  background: #fff;
+  background: #fafafa;
   border-radius: 50%;
 }
 
