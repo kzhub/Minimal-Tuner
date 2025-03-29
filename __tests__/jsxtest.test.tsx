@@ -6,8 +6,10 @@ const TestComponent = () => {
   > Hello, World!</div >;
 };
 
-test('renders TestComponent with correct text', () => {
-  render(<TestComponent />);
-  const title = screen.getByTestId("title")
-  expect(title).toHaveTextContent("Hello, World!")
+describe('コンポーネントのレンダリングテスト', () => {
+  test('TestComponentが正しくレンダリングされ、Hello, World!というテキストが表示される', () => {
+    render(<TestComponent />);
+    const title = screen.getByTestId("title")
+    expect(title).toHaveTextContent("Hello, World!")
+  });
 });
