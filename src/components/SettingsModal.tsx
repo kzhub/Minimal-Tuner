@@ -38,23 +38,39 @@ export function SettingsModal({
   if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.modalOverlay}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settings-modal-title"
+    >
+      <div
+        className={styles.modalContent}
+        onClick={(e) => e.stopPropagation()}
+        id="settings-modal"
+      >
         <div className={styles.modalHeader}>
-          <h2>Settings</h2>
-          <button className={styles.closeButton} onClick={onClose}>
+          <h2 id="settings-modal-title">settings</h2>
+          <button
+            className={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close settings"
+          >
             ×
           </button>
         </div>
         <div className={styles.modalBody}>
           <div className={styles.settingItem}>
-            <label>Mode</label>
+            <label htmlFor="mode-toggle">mode</label>
             <div className={styles.switchContainer}>
               <label className={styles.switch}>
                 <input
+                  id="mode-toggle"
                   type="checkbox"
                   checked={isLowMode}
                   onChange={handleModeChange}
+                  aria-label="Toggle mode"
                 />
                 <span className={styles.slider}></span>
               </label>

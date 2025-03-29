@@ -9,7 +9,7 @@ const ubuntu = Ubuntu({
 });
 
 export const metadata: Metadata = {
-  title: "Guitar & Bass Tuner",
+  title: "minimal-tuner | ",
   description: "Professional tuner for guitar and bass",
 };
 
