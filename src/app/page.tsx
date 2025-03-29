@@ -10,6 +10,7 @@ import {
 import { TunerDisplay } from "../components/TunerDisplay";
 import { SettingsModal } from "../components/SettingsModal";
 import { TUNING_THRESHOLD, INSTRUMENT_FREQ_RANGES } from "../lib/constants";
+import { IoSettingsOutline } from "react-icons/io5";
 
 export default function Tuner() {
   const [frequency, setFrequency] = useState<number | null>(null);
@@ -80,7 +81,15 @@ export default function Tuner() {
   return (
     <main className={styles.main}>
       <div className={styles.settingsButton}>
-        <button onClick={() => setIsSettingsOpen(true)}>⚙️</button>
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          aria-label="設定を開く"
+          aria-expanded={isSettingsOpen}
+          aria-controls="settings-modal"
+          className={styles.settingsButton}
+        >
+          <IoSettingsOutline size={24} color="#666" aria-hidden="true" />
+        </button>
       </div>
       <TunerDisplay
         note={note}
