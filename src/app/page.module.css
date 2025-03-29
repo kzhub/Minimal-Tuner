@@ -1,0 +1,92 @@
+.main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #000;
+  color: #fff;
+  font-family: var(--font-noto-sans);
+}
+
+.tunerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.instrumentSelect {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: 1px solid #333;
+  color: #666;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.instrumentSelect:hover {
+  border-color: #666;
+}
+
+.tunerNote {
+  font-size: 10rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  margin-top: 2rem;
+}
+
+.tunerFreq {
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+}
+
+.tunerCents {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 2rem;
+}
+
+.needle {
+  width: 4px;
+  height: 120px;
+  background: linear-gradient(to bottom, #fff, #666);
+  border-radius: 2px;
+  transform-origin: bottom center;
+  transition: transform 0.15s ease-out;
+  position: relative;
+}
+
+.needle::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: -8px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+}
+
+@media (max-width: 600px) {
+  .tunerNote {
+    font-size: 8rem;
+  }
+  
+  .needle {
+    height: 100px;
+  }
+}
