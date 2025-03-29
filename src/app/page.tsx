@@ -4,8 +4,10 @@ import { useEffect, useState, useCallback } from "react";
 // @ts-expect-error CSS Modulesの型定義がNext.js 13 App Routerで認識されない問題の一時的な回避策
 import styles from "./page.module.css";
 
-const NOTE_NAMES = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"];
+// 音名とオクターブ情報を含む配列
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 const A4_FREQ = 440.0;
+const A4_NOTE_NUMBER = 69; // MIDIノートナンバーでのA4
 
 // 全周波数範囲（C1からC8まで）
 const FREQ_RANGE = {
@@ -16,25 +18,38 @@ const FREQ_RANGE = {
 // チューニング許容範囲（セント）
 const TUNING_THRESHOLD = 5;
 
+// MIDIノートナンバーから周波数を計算
+function midiNoteToFreq(noteNumber: number): number {
+  return A4_FREQ * Math.pow(2, (noteNumber - A4_NOTE_NUMBER) / 12);
+}
+
+// 周波数から最も近い平均率の音を見つける
+function findClosestEqualTemperamentNote(freq: number): { noteNumber: number; cents: number } {
+  const noteNumber = Math.round(12 * Math.log2(freq / A4_FREQ) + A4_NOTE_NUMBER);
+  const equalTemperamentFreq = midiNoteToFreq(noteNumber);
+  const cents = Math.round(1200 * Math.log2(freq / equalTemperamentFreq));
+  return { noteNumber, cents };
+}
+
+// MIDIノートナンバーから音名とオクターブを取得
+function getNoteNameWithOctave(noteNumber: number): string {
+  const octave = Math.floor((noteNumber - 12) / 12);
+  const noteIndex = ((noteNumber % 12) + 12) % 12;
+  return `${NOTE_NAMES[noteIndex]}${octave}`;
+}
+
 export default function Tuner() {
   const [frequency, setFrequency] = useState<number | null>(null);
   const [note, setNote] = useState<string>("");
   const [cents, setCents] = useState<number>(0);
   const [isInTune, setIsInTune] = useState<boolean>(false);
 
-  const getNote = useCallback((frequency: number) => {
-    const noteNum = 12 * (Math.log2(frequency / A4_FREQ));
-    const noteIndex = Math.round(noteNum) % 12;
-    if (noteIndex < 0) {
-      return NOTE_NAMES[noteIndex + 12];
-    }
-    return NOTE_NAMES[noteIndex];
-  }, []);
+  const [noteWithOctave, setNoteWithOctave] = useState<string>("");
 
-  const getCents = useCallback((frequency: number, note: string) => {
-    const baseFreq = A4_FREQ * Math.pow(2, NOTE_NAMES.indexOf(note) / 12);
-    const cents = Math.round(1200 * Math.log2(frequency / baseFreq));
-    return cents;
+  const analyzeNote = useCallback((frequency: number) => {
+    const { noteNumber, cents } = findClosestEqualTemperamentNote(frequency);
+    const noteName = getNoteNameWithOctave(noteNumber);
+    return { noteName, cents };
   }, []);
 
   useEffect(() => {
@@ -44,53 +59,41 @@ export default function Tuner() {
     let animationFrame: number;
     const movingAverageBuffer: number[] = [];
 
+    // 自己相関による基本周波数検出
     const detectPitch = () => {
-      const frequencyData = new Float32Array(analyser.frequencyBinCount);
-      analyser.getFloatFrequencyData(frequencyData);
+      const timeDomainData = new Float32Array(analyser.frequencyBinCount);
+      analyser.getFloatTimeDomainData(timeDomainData);
 
-      const nyquist = audioContext.sampleRate / 2;
+      const correlationData = new Float32Array(timeDomainData.length);
       const range = FREQ_RANGE;
-      const peaks: Array<{ frequency: number; amplitude: number }> = [];
 
-      // ピーク検出
-      for (let i = 1; i < frequencyData.length - 1; i++) {
-        const frequency = (i * nyquist) / frequencyData.length;
-        if (frequency < range.min || frequency > range.max) continue;
-
-        const amplitude = frequencyData[i];
-        if (amplitude <= -60) continue; // ノイズフィルタリング
-
-        // ローカルピークの検出
-        if (amplitude > frequencyData[i - 1] && amplitude > frequencyData[i + 1]) {
-          peaks.push({ frequency, amplitude });
+      // 自己相関関数の計算
+      for (let lag = 0; lag < correlationData.length; lag++) {
+        let correlation = 0;
+        for (let i = 0; i < correlationData.length - lag; i++) {
+          correlation += timeDomainData[i] * timeDomainData[i + lag];
         }
+        correlationData[lag] = correlation;
       }
 
-      // 振幅でソートし、上位のピークを取得
-      peaks.sort((a, b) => b.amplitude - a.amplitude);
-      const topPeaks = peaks.slice(0, 5);
-
-      // 基本周波数の推定
+      // ピーク検出
+      let maxCorrelation = -Infinity;
       let fundamentalFreq = 0;
-      if (topPeaks.length > 0) {
-        // スペクトル重心法を使用して基本周波数を推定
-        let weightedSum = 0;
-        let amplitudeSum = 0;
+      const sampleRate = audioContext.sampleRate;
+      const minLag = Math.floor(sampleRate / range.max);
+      const maxLag = Math.ceil(sampleRate / range.min);
 
-        for (const peak of topPeaks) {
-          const weight = Math.pow(10, peak.amplitude / 20); // dBを線形スケールに変換
-          weightedSum += peak.frequency * weight;
-          amplitudeSum += weight;
+      for (let lag = minLag; lag <= maxLag; lag++) {
+        if (correlationData[lag] > correlationData[lag - 1] &&
+          correlationData[lag] > correlationData[lag + 1] &&
+          correlationData[lag] > maxCorrelation) {
+          // 自己相関のピークを検出
+          const freq = sampleRate / lag;
+          if (freq >= range.min && freq <= range.max) {
+            maxCorrelation = correlationData[lag];
+            fundamentalFreq = freq;
+          }
         }
-
-        // 基本周波数の推定（最も低い周波数に近い倍音を選択）
-        const spectralCentroid = weightedSum / amplitudeSum;
-        const lowestPeak = topPeaks[0];
-        const harmonicIndex = Math.round(spectralCentroid / lowestPeak.frequency);
-
-        fundamentalFreq = harmonicIndex > 0 ?
-          spectralCentroid / harmonicIndex :
-          lowestPeak.frequency;
       }
 
       if (fundamentalFreq > 0) {
@@ -109,11 +112,11 @@ export default function Tuner() {
         const sortedBuffer = [...movingAverageBuffer].sort((a, b) => a - b);
         const medianFreq = sortedBuffer[Math.floor(sortedBuffer.length / 2)];
 
-        const detectedNote = getNote(medianFreq);
-        const newCents = getCents(medianFreq, detectedNote);
+        const { noteName, cents: newCents } = analyzeNote(medianFreq);
 
         setFrequency(medianFreq);
-        setNote(detectedNote);
+        setNote(noteName.slice(0, -1)); // オクターブ番号を除いた音名
+        setNoteWithOctave(noteName);
         setCents(newCents);
 
         // チューニング状態の更新
@@ -150,13 +153,16 @@ export default function Tuner() {
         audioContext.close();
       }
     };
-  }, [getNote, getCents]);
+  }, [analyzeNote]);
 
   return (
     <main className={styles.main}>
       <div className={styles.tunerContainer}>
         <div className={`${styles.tunerNote} ${isInTune ? styles.inTune : ''}`}>
-          {note || "-"}
+          {note || "-"}{" "}
+          <span style={{ fontSize: "0.4em", verticalAlign: "super" }}>
+            {noteWithOctave ? noteWithOctave.slice(-1) : ""}
+          </span>
           <div className={`${styles.tuningIndicator} ${isInTune ? styles.inTune : ''}`} />
         </div>
         <div className={styles.tunerFreq}>
