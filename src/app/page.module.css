@@ -43,6 +43,48 @@
   line-height: 1;
   letter-spacing: -0.05em;
   margin-top: 2rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.tunerNote.inTune {
+  color: #4CAF50;
+  text-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+}
+
+.tuningIndicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200%;
+  height: 200%;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tuningIndicator.inTune {
+  opacity: 0.15;
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.8) 0%, rgba(76, 175, 80, 0) 70%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.15;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.2;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.15;
+  }
 }
 
 .tunerFreq {
@@ -63,7 +105,8 @@
 .needle {
   width: 4px;
   height: 120px;
-  background: linear-gradient(to bottom, #fff, #666);
+  background: linear-gradient(to bottom, currentColor, #666);
+  color: #fff;
   border-radius: 2px;
   transform-origin: bottom center;
   transition: transform 0.15s ease-out;
@@ -88,5 +131,10 @@
   
   .needle {
     height: 100px;
+  }
+
+  .tuningIndicator {
+    width: 150%;
+    height: 150%;
   }
 }
