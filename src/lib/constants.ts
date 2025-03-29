@@ -14,11 +14,13 @@ export const A4_FREQ = 440.0;
 export const A4_NOTE_NUMBER = 69; // MIDIノートナンバーでのA4
 
 export const FREQ_RANGE = {
-  min: 27.5,  // A0
-  max: 4186.0 // C8
+  min: 20,  // Hz
+  max: 2000 // Hz
 };
 
-export const CORRELATION_THRESHOLD = 0.05;  // 相関値の最小閾値を0.1から0.05に下げる
-export const MIN_SIGNAL_STRENGTH = 0.005;   // 信号強度の最小閾値を0.01から0.005に下げる
+export const CORRELATION_THRESHOLD = 0.8;
+export const MIN_SIGNAL_STRENGTH = 0.01;
+export const FFT_SIZE = 2048;
+export const MOVING_AVERAGE_BUFFER_SIZE = 4;
 
 export const TUNING_THRESHOLD = 5; 

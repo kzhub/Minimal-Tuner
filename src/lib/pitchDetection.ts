@@ -3,12 +3,12 @@
  * 
  * このモジュールは以下の機能を提供します：
  * - マイクからの音声入力の取得
- * - 自己相関関数を使用したピッチ検出
+ * - 自己相関関数を使用した高精度なピッチ検出
  * - 動的な移動平均による安定したピッチ値の計算
  * - 指定された周波数範囲内でのピッチ検出
  */
 
-import { FREQ_RANGE, CORRELATION_THRESHOLD, MIN_SIGNAL_STRENGTH } from './constants';
+import { FREQ_RANGE, CORRELATION_THRESHOLD, MIN_SIGNAL_STRENGTH, FFT_SIZE, MOVING_AVERAGE_BUFFER_SIZE } from './constants';
 
 /**
  * 音声のピッチを検出するクラス
@@ -21,13 +21,15 @@ import { FREQ_RANGE, CORRELATION_THRESHOLD, MIN_SIGNAL_STRENGTH } from './consta
 export class PitchDetector {
   private audioContext: AudioContext;
   private analyser: AnalyserNode;
-  private source: MediaStreamAudioSourceNode;
+  private source: MediaStreamAudioSourceNode | null = null;
   private movingAverageBuffer: number[] = [];
+  private timeDomainBuffer: Float32Array;
 
   constructor() {
     this.audioContext = new AudioContext();
     this.analyser = this.audioContext.createAnalyser();
-    this.analyser.fftSize = 32768;
+    this.analyser.fftSize = FFT_SIZE;
+    this.timeDomainBuffer = new Float32Array(this.analyser.frequencyBinCount);
   }
 
   /**
@@ -39,87 +41,89 @@ export class PitchDetector {
     this.source.connect(this.analyser);
   }
 
+  private calculateAutocorrelation(data: Float32Array): Float32Array {
+    const result = new Float32Array(data.length);
+    for (let lag = 0; lag < data.length; lag++) {
+      let sum = 0;
+      for (let i = 0; i < data.length - lag; i++) {
+        sum += data[i] * data[i + lag];
+      }
+      result[lag] = sum;
+    }
+    return result;
+  }
+
+  private findPeakIndex(correlation: Float32Array, sampleRate: number): number | null {
+    const minLag = Math.floor(sampleRate / FREQ_RANGE.max);
+    const maxLag = Math.ceil(sampleRate / FREQ_RANGE.min);
+    
+    let maxCorrelation = -Infinity;
+    let peakIndex = -1;
+
+    // 最初のピークを探す
+    for (let i = minLag; i <= maxLag; i++) {
+      if (correlation[i] > maxCorrelation) {
+        maxCorrelation = correlation[i];
+        peakIndex = i;
+      }
+    }
+
+    // ピークの有効性を確認
+    if (peakIndex === -1 || maxCorrelation < CORRELATION_THRESHOLD) {
+      return null;
+    }
+
+    return peakIndex;
+  }
+
+  private interpolatePeak(correlation: Float32Array, peakIndex: number): number {
+    const alpha = correlation[peakIndex - 1];
+    const beta = correlation[peakIndex];
+    const gamma = correlation[peakIndex + 1];
+
+    const p = 0.5 * (alpha - gamma) / (alpha - 2 * beta + gamma);
+    return peakIndex + p;
+  }
+
   /**
    * 現在の音声からピッチを検出
    * @returns 検出されたピッチ値（Hz）または検出できない場合はnull
    */
   detectPitch(): number | null {
-    const timeDomainData = new Float32Array(this.analyser.frequencyBinCount);
-    this.analyser.getFloatTimeDomainData(timeDomainData);
+    // 時系列データの取得
+    this.analyser.getFloatTimeDomainData(this.timeDomainBuffer);
 
     // 信号強度のチェック
     let signalStrength = 0;
-    for (let i = 0; i < timeDomainData.length; i++) {
-      signalStrength += timeDomainData[i] * timeDomainData[i];
+    for (const value of this.timeDomainBuffer) {
+      signalStrength += value * value;
     }
-    signalStrength = Math.sqrt(signalStrength / timeDomainData.length);
+    signalStrength = Math.sqrt(signalStrength / this.timeDomainBuffer.length);
 
     if (signalStrength < MIN_SIGNAL_STRENGTH) {
       return null;
     }
 
-    const correlationData = new Float32Array(timeDomainData.length);
-    const range = FREQ_RANGE;
-
     // 自己相関関数の計算
-    for (let lag = 0; lag < correlationData.length; lag++) {
-      let correlation = 0;
-      for (let i = 0; i < correlationData.length - lag; i++) {
-        correlation += timeDomainData[i] * timeDomainData[i + lag];
-      }
-      correlationData[lag] = correlation;
-    }
-
-    // ピーク検出
-    let maxCorrelation = -Infinity;
-    let fundamentalFreq = 0;
+    const correlation = this.calculateAutocorrelation(this.timeDomainBuffer);
     const sampleRate = this.audioContext.sampleRate;
-    const minLag = Math.floor(sampleRate / range.max);
-    const maxLag = Math.ceil(sampleRate / range.min);
 
-    // 相関値の正規化
-    const maxCorrValue = Math.max(...correlationData);
-    const minCorrValue = Math.min(...correlationData);
-    const corrRange = maxCorrValue - minCorrValue;
-
-    for (let lag = minLag; lag <= maxLag; lag++) {
-      const normalizedCorr = (correlationData[lag] - minCorrValue) / corrRange;
-      
-      if (normalizedCorr > CORRELATION_THRESHOLD &&
-          correlationData[lag] > correlationData[lag - 1] &&
-          correlationData[lag] > correlationData[lag + 1] &&
-          correlationData[lag] > maxCorrelation) {
-        
-        const freq = sampleRate / lag;
-        // 倍音の影響を軽減するためのチェック
-        let isHarmonic = false;
-        for (let i = 2; i <= 4; i++) {
-          const harmonicFreq = freq * i;
-          const harmonicLag = Math.round(sampleRate / harmonicFreq);
-          if (harmonicLag < correlationData.length &&
-              correlationData[harmonicLag] > correlationData[lag] * 0.9) {
-            isHarmonic = true;
-            break;
-          }
-        }
-
-        if (!isHarmonic && freq >= range.min && freq <= range.max) {
-          maxCorrelation = correlationData[lag];
-          fundamentalFreq = freq;
-        }
-      }
+    // ピークの検出と補間
+    const peakIndex = this.findPeakIndex(correlation, sampleRate);
+    if (peakIndex === null) {
+      return null;
     }
 
-    if (fundamentalFreq > 0) {
-      const dynamicBufferSize = fundamentalFreq < 100 ? 8 :
-        fundamentalFreq < 200 ? 6 :
-          4;
+    const interpolatedIndex = this.interpolatePeak(correlation, peakIndex);
+    const fundamentalFreq = sampleRate / interpolatedIndex;
 
+    if (fundamentalFreq >= FREQ_RANGE.min && fundamentalFreq <= FREQ_RANGE.max) {
       this.movingAverageBuffer.push(fundamentalFreq);
-      if (this.movingAverageBuffer.length > dynamicBufferSize) {
+      if (this.movingAverageBuffer.length > MOVING_AVERAGE_BUFFER_SIZE) {
         this.movingAverageBuffer.shift();
       }
 
+      // 中央値を使用して安定化
       const sortedBuffer = [...this.movingAverageBuffer].sort((a, b) => a - b);
       return sortedBuffer[Math.floor(sortedBuffer.length / 2)];
     }
