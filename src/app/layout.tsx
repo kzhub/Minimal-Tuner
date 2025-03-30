@@ -14,7 +14,7 @@ const t = translations[DEFAULT_LOCALE];
 export const metadata: Metadata = {
   title: {
     default: t.title,
-    template: "%s"
+    template: "%s",
   },
   description: t.description,
   keywords: t.keywords,
@@ -32,6 +32,14 @@ export const metadata: Metadata = {
       "ja-JP": "https://your-domain.com/ja",
     },
   },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -41,6 +49,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang={DEFAULT_LOCALE}>
+      <head>
+        <meta name="robots" content="noindex,nofollow" />
+      </head>
       <body className={ubuntu.className}>{children}</body>
     </html>
   );
