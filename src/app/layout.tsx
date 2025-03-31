@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     alternateLocale: "ja_JP",
   },
   alternates: {
-    canonical: "https://your-domain.com",
+    canonical: "https://minimal-tuner.com",
     languages: {
-      "en-US": "https://your-domain.com/en",
-      "ja-JP": "https://your-domain.com/ja",
+      "en-US": "https://minimal-tuner.com/en",
+      "ja-JP": "https://minimal-tuner.com/ja",
     },
   },
   robots: {
