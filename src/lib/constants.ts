@@ -45,11 +45,11 @@ export const DEFAULT_LOCALE: Locale = 'en';
 
 export const translations = {
   en: {
-    title: 'minimal-tuner | Professional Chromatic Tuner',
-    description: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with professional-grade accuracy.',
+    title: 'minimal-tuner | Free Chromatic Tuner',
+    description: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with Free-grade accuracy.',
     keywords: 'chromatic tuner, guitar tuner, bass tuner, violin tuner, ukulele tuner, online tuner, free tuner, professional tuner, musical instrument tuner, pitch tuner',
-    ogTitle: 'minimal-tuner | Professional Chromatic Tuner',
-    ogDescription: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with professional-grade accuracy.',
+    ogTitle: 'minimal-tuner | Free Chromatic Tuner',
+    ogDescription: 'High-precision chromatic tuner for all musical instruments. Perfect for guitar, bass, violin, ukulele, and more. Free online tuner with Free-grade accuracy.',
     ogLocale: 'en_US',
     settings: {
       openSettings: 'Open Settings',
@@ -71,10 +71,10 @@ export const translations = {
     },
   },
   ja: {
-    title: 'minimal-tuner | プロフェッショナル クロマチックチューナー',
+    title: 'minimal-tuner | 無料 クロマチックチューナー',
     description: 'すべての楽器に対応した高精度なクロマチックチューナー。ギター、ベース、バイオリン、ウクレレなど、様々な楽器のチューニングに最適。無料で使えるオンラインチューナー。',
     keywords: 'クロマチックチューナー, ギターチューナー, ベースチューナー, バイオリンチューナー, ウクレレチューナー, オンラインチューナー, 無料チューナー, プロフェッショナルチューナー, 楽器チューナー, 音程チューナー',
-    ogTitle: 'minimal-tuner | プロフェッショナル クロマチックチューナー',
+    ogTitle: 'minimal-tuner | 無料 クロマチックチューナー',
     ogDescription: 'すべての楽器に対応した高精度なクロマチックチューナー。ギター、ベース、バイオリン、ウクレレなど、様々な楽器のチューニングに最適。無料で使えるオンラインチューナー。',
     ogLocale: 'ja_JP',
     settings: {
