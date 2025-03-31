@@ -16,7 +16,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await Promise.resolve(params);
   const t = translations[resolvedParams.locale];
-  const baseUrl = "https://your-domain.com";
+  const baseUrl = "https://minimal-tuner.com";
 
   return {
     title: {

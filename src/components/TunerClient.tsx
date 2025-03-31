@@ -16,8 +16,8 @@ import { usePathname, useRouter } from "next/navigation";
 export default function TunerClient() {
   const pathname = usePathname();
   const router = useRouter();
-  const locale = (pathname?.split('/')[1] as Locale) || 'en';
-  const t = translations[locale];
+  const [currentLocale, setCurrentLocale] = useState<Locale>((pathname?.split('/')[1] as Locale) || 'en');
+  const t = translations[currentLocale];
 
   const [frequency, setFrequency] = useState<number | null>(null);
   const [note, setNote] = useState<string>("");
@@ -28,8 +28,10 @@ export default function TunerClient() {
   const [isLowMode, setIsLowMode] = useState<boolean>(false);
 
   const toggleLocale = () => {
-    const newLocale = locale === 'en' ? 'ja' : 'en';
+    const newLocale = currentLocale === 'en' ? 'ja' : 'en';
+    setCurrentLocale(newLocale);
     router.push(`/${newLocale}`);
+    document.documentElement.lang = newLocale;
   };
 
   const analyzeNote = useCallback((frequency: number) => {
@@ -87,7 +89,7 @@ export default function TunerClient() {
       <div className={styles.headerButtons}>
         <button
           onClick={toggleLocale}
-          aria-label={locale === 'en' ? '日本語に切り替え' : 'Switch to English'}
+          aria-label={currentLocale === 'en' ? '日本語に切り替え' : 'Switch to English'}
           className={styles.langButton}
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -96,7 +98,7 @@ export default function TunerClient() {
             }
           }}
         >
-          {locale === 'en' ? 'JA' : 'EN'}
+          {currentLocale === 'en' ? 'JA' : 'EN'}
         </button>
         <button
           onClick={() => setIsSettingsOpen(true)}
