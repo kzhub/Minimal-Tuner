@@ -32,14 +32,6 @@ export const metadata: Metadata = {
       "ja-JP": "https://minimal-tuner.com/ja",
     },
   },
-  robots: {
-    index: false,
-    follow: false,
-    googleBot: {
-      index: false,
-      follow: false,
-    },
-  },
 };
 
 export default function RootLayout({
@@ -49,9 +41,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang={DEFAULT_LOCALE}>
-      <head>
-        <meta name="robots" content="noindex,nofollow" />
-      </head>
       <body className={ubuntu.className}>{children}</body>
     </html>
   );
