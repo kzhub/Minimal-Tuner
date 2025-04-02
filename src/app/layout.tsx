@@ -43,10 +43,9 @@ export default function RootLayout({
   return (
     <html lang={DEFAULT_LOCALE}>
       <head>
-        <Script
-          async
+        <script
+          async={true}
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2543187308039193"
-          crossOrigin="anonymous"
         />
       </head>
       <body className={ubuntu.className}>{children}</body>
