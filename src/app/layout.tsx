@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <script
           async={true}
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2543187308039193"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2543187308039193`}
         />
       </head>
       <body className={ubuntu.className}>{children}</body>
